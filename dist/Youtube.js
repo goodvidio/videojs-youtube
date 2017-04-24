@@ -64,8 +64,14 @@ THE SOFTWARE. */
     dispose: function() {
       if (this.ytPlayer) {
         //Dispose of the YouTube Player
-        this.ytPlayer.stopVideo();
-        this.ytPlayer.destroy();
+        try {
+            this.ytPlayer.stopVideo();
+            this.ytPlayer.destroy();
+        } catch (e) {
+          if (e.message !== 'this.ytPlayer.stopVideo is not a function') {
+            console.log(e);
+          }
+        }
       } else {
         //YouTube API hasn't finished loading or the player is already disposed
         var index = Youtube.apiReadyQueue.indexOf(this);
@@ -284,11 +290,14 @@ THE SOFTWARE. */
         case YT.PlayerState.PLAYING:
           this.trigger('timeupdate');
           this.trigger('durationchange');
-          this.trigger('playing');
-          this.trigger('play');
 
           if (this.isSeeking) {
             this.onSeeked();
+          }
+
+          if (!this.isSeeking && state !== YT.PlayerState.BUFFERING) {
+            this.trigger('playing');
+            this.trigger('play');
           }
           break;
 
